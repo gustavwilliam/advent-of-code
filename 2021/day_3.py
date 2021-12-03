@@ -14,6 +14,16 @@ def common(stream: List[str]) -> str:
         return 1
 
 
+def validate(streams: List[List[str]], valid: List[bool], f) -> None:
+    for stream in streams:
+        stream_valid = f(stream, valid)
+        for j, row in enumerate(stream):
+            if valid.count(True) == 1:
+                break
+            if row != stream_valid:
+                valid[j] = False
+
+
 def puzzle_1(streams: List[List[str]]) -> int:
     gamma = int("".join(common(s) for s in streams), base=2)
     epsilon = ~gamma & int("1" * len(streams), base=2)
@@ -21,23 +31,12 @@ def puzzle_1(streams: List[List[str]]) -> int:
 
 
 def puzzle_2(streams: List[List[str]], data: List[str]) -> int:
-    valid = [[True for _ in range(len(streams[0]))] for _ in range(2)]
-
-    for stream in streams:
-        o2 = common(list(compress(stream, valid[0])))
-        for j, row in enumerate(stream):
-            if valid[0].count(True) == 1:
-                break
-            if row != o2:
-                valid[0][j] = False
-
-    for stream in streams:
-        co2 = str(1 - int(common(list(compress(stream, valid[1])))))
-        for j, row in enumerate(stream):
-            if valid[1].count(True) == 1:
-                break
-            if row != co2:
-                valid[1][j] = False
+    valid = [
+        [True for _ in range(len(streams[0]))],
+        [True for _ in range(len(streams[0]))],
+    ]
+    validate(streams, valid[0], lambda a, b: common(list(compress(a, b))))
+    validate(streams, valid[1], lambda a, b: str(1 - int(common(list(compress(a, b))))))
 
     return int(data[valid[0].index(True)], base=2) * int(
         data[valid[1].index(True)], base=2
