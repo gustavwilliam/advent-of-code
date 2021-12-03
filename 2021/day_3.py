@@ -32,11 +32,13 @@ def puzzle_1(streams: List[List[str]]) -> int:
 
 def puzzle_2(streams: List[List[str]], data: List[str]) -> int:
     valid = [
-        [True for _ in range(len(streams[0]))],
-        [True for _ in range(len(streams[0]))],
+        [True for _ in range(len(streams[0]))],  # Oxygen
+        [True for _ in range(len(streams[0]))],  # CO2
     ]
-    validate(streams, valid[0], lambda a, b: common(list(compress(a, b))))
-    validate(streams, valid[1], lambda a, b: str(1 - int(common(list(compress(a, b))))))
+    validate(streams, valid[0], lambda a, b: common(list(compress(a, b))))  # Oxygen
+    validate(
+        streams, valid[1], lambda a, b: str(1 - int(common(list(compress(a, b)))))
+    )  # CO2
 
     return int(data[valid[0].index(True)], base=2) * int(
         data[valid[1].index(True)], base=2
