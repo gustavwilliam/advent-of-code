@@ -12,8 +12,8 @@ class Board:
     rows: List[List[int]]
 
     def __post_init__(self):
-        self.marked = [[False] * 5, [False] * 5, [False] * 5, [False] * 5, [False] * 5]
-        self.bingo_value: int | None = None
+        self.marked = [[False] * 5 for _ in range(5)]
+        self.bingo_value: int
         self.completed = False
 
     def new_value(self, value: int) -> None:
@@ -48,12 +48,13 @@ def parse_raw(data: List[str]) -> Tuple[List[int], List[Board]]:
 def get_all_bingo(data: Tuple[List[int], List[Board]]) -> Generator[Board, None, None]:
     for value in data[0]:
         for board in data[1]:
-            if not board.completed:
-                board.new_value(value)
-                if board.bingo():
-                    board.completed = True
-                    board.bingo_value = value
-                    yield board
+            if board.completed:
+                continue
+            board.new_value(value)
+            if board.bingo():
+                board.completed = True
+                board.bingo_value = value
+                yield board
 
 
 def puzzle_1(data: Tuple[List[int], List[Board]]) -> int:
