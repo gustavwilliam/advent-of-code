@@ -26,6 +26,14 @@ class Board:
             return True
         return False
 
+    @property
+    def sum_unmarked(self) -> int:
+        compressed = compress(
+            [i for sub in self.rows for i in sub],
+            [not i for sub in self.marked for i in sub],
+        )
+        return sum(list(compressed))
+
 
 def parse_raw(data: List[str]) -> Tuple[List[int], List[Board]]:
     inputs = [int(i) for i in data.pop(0).split(",")]
@@ -47,11 +55,7 @@ def get_bingo(data: Tuple[List[int], List[Board]]) -> Board:
 
 def puzzle_1(data: Tuple[List[int], List[Board]]) -> int:
     board = get_bingo(data)
-    compressed = compress(
-        [i for sub in board.rows for i in sub],
-        [not i for sub in board.marked for i in sub],
-    )
-    return sum(list(compressed)) * board.bingo_value
+    return board.sum_unmarked * board.bingo_value
 
 
 if __name__ == "__main__":
