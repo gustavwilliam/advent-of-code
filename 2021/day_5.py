@@ -56,7 +56,6 @@ class Board:
             max(line.max.y for line in self.lines),
         )
 
-    @property
     def hits(self) -> int:
         total_hits = 0
         for x, y in product(range(self.max.x + 1), range(self.max.y + 1)):
@@ -79,7 +78,7 @@ def parse_raw(data: List[str]) -> List[Line]:
 
 def puzzle_1(board: Board) -> int:
     board.prune_tilted()
-    return board.hits
+    return board.hits()
 
 
 if __name__ == "__main__":
