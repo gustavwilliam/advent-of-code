@@ -50,23 +50,21 @@ class Line:
 class Board:
     lines: List[Line]
 
-    @property
-    def max(self) -> Point:
-        return Point(
+    def __post_init__(self):
+        self.max = Point(
             max(line.max.x for line in self.lines),
             max(line.max.y for line in self.lines),
         )
 
     @property
-    def render_list(self) -> List[List[int]]:
-        render_list = [[0] * (self.max.x + 1) for _ in range(self.max.y + 1)]
+    def hits(self) -> int:
+        total_hits = 0
         for x, y in product(range(self.max.x + 1), range(self.max.y + 1)):
             point = Point(x, y)
-            for line in self.lines:
-                if line.collides(point):
-                    render_list[x][y] += 1
+            if sum([line.collides(point) for line in self.lines]) > 1:
+                total_hits += 1
 
-        return render_list
+        return total_hits
 
     def prune_tilted(self):
         self.lines = [
@@ -81,7 +79,7 @@ def parse_raw(data: List[str]) -> List[Line]:
 
 def puzzle_1(board: Board) -> int:
     board.prune_tilted()
-    return sum(item > 1 for item in chain(*board.render_list))
+    return board.hits
 
 
 if __name__ == "__main__":
