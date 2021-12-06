@@ -1,6 +1,6 @@
 import re
 from dataclasses import dataclass
-from itertools import product, chain
+from itertools import product
 from typing import List, NamedTuple, Literal
 
 Point = NamedTuple("Point", [("x", int), ("y", int)])
@@ -30,8 +30,13 @@ class Line:
 
     def collides(self, point: Point) -> bool:
         if isinstance(direction := self.direction, int):
-            return False
-        if (
+            if (
+                (point.x - self.start.x) * self.direction == point.y
+                or (self.start.x == point.x and self.start.y == point.y)
+                or (self.end.x == point.x and self.end.y == point.y)
+            ):
+                return True
+        elif (
             direction == "vertical"
             and self.start.y == point.y
             and self.max.x >= point.x
@@ -76,11 +81,18 @@ def parse_raw(data: List[str]) -> List[Line]:
     return [Line(Point(line[0], line[1]), Point(line[2], line[3])) for line in lines]
 
 
-def puzzle_1(board: Board) -> int:
+def puzzle_1(data: List[Line]) -> int:
+    board = Board(data)
     board.prune_tilted()
     return board.hits()
 
 
+def puzzle_2(data: List[Line]) -> int:
+    board = Board(data)
+    return board.hits()
+
+
 if __name__ == "__main__":
-    board = Board(parse_raw(data))
-    print(puzzle_1(board))
+    data = parse_raw(data)
+    # print(f"Puzzle 1: {puzzle_1(data)}")
+    print(f"Puzzle 2: {puzzle_2(data)}")
