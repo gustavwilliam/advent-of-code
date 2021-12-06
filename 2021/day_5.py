@@ -1,98 +1,56 @@
 import re
-from dataclasses import dataclass
-from itertools import product
-from typing import List, NamedTuple, Literal
+import numpy as np
+from typing import Generator, List, Tuple
 
-Point = NamedTuple("Point", [("x", int), ("y", int)])
-Direction = Literal["horizontal", "vertical"]
+Data = List[Tuple[Tuple[int, int], Tuple[int, int]]]
 
 with open("2021/day_5.txt") as f:
     data = f.read().splitlines()
 
 
-@dataclass
-class Line:
-    start: Point
-    end: Point
-
-    def __post_init__(self):
-        self.max = Point(max(self.start.x, self.end.x), max(self.start.y, self.end.y))
-        self.min = Point(min(self.start.x, self.end.x), min(self.start.y, self.end.y))
-
-        if self.start.x == self.end.x:
-            self.direction = "horizontal"
-        elif self.start.y == self.end.y:
-            self.direction = "vertical"
-        else:
-            self.direction = int(
-                (self.end.y - self.start.y) / (self.end.x - self.start.x)
-            )
-
-    def collides(self, point: Point) -> bool:
-        if isinstance(direction := self.direction, int):
-            if (
-                (point.x - self.start.x) * self.direction == point.y
-                or (self.start.x == point.x and self.start.y == point.y)
-                or (self.end.x == point.x and self.end.y == point.y)
-            ):
-                return True
-        elif (
-            direction == "vertical"
-            and self.start.y == point.y
-            and self.max.x >= point.x
-            and self.min.x <= point.x
-        ) or (
-            direction == "horizontal"
-            and self.start.x == point.x
-            and self.max.y >= point.y
-            and self.min.y <= point.y
-        ):
-            return True
-        return False
+def parse_raw(
+    data: List[str],
+) -> Generator[Tuple[Tuple[int, int], Tuple[int, int]], None, None]:
+    for line in data:
+        x1, y1, x2, y2 = map(int, re.findall(r"\d+", line))
+        yield (x1, y1), (x2, y2)
 
 
-@dataclass
-class Board:
-    lines: List[Line]
+def intersections(
+    line: Tuple[Tuple[int, int], Tuple[int, int]]
+) -> List[Tuple[int, int]]:
+    (x1, y1), (x2, y2) = line
+    if x1 == x2:
+        return [(x1, y) for y in (range(y1, y2 + 1) if y2 >= y1 else range(y2, y1 + 1))]
+    if y1 == y2:
+        return [(x, y1) for x in (range(x1, x2 + 1) if x2 >= x1 else range(x2, x1 + 1))]
 
-    def __post_init__(self):
-        self.max = Point(
-            max(line.max.x for line in self.lines),
-            max(line.max.y for line in self.lines),
-        )
-
-    def hits(self) -> int:
-        total_hits = 0
-        for x, y in product(range(self.max.x + 1), range(self.max.y + 1)):
-            point = Point(x, y)
-            if sum([line.collides(point) for line in self.lines]) > 1:
-                total_hits += 1
-
-        return total_hits
-
-    def prune_tilted(self):
-        self.lines = [
-            line for line in self.lines if not isinstance(line.direction, int)
-        ]
+    tilt = (y2 - y1) // (x2 - x1)  # 1 or -1
+    if x2 < x1:
+        (x1, y1), (x2, y2) = (x2, y2), (x1, y1)
+    return [(x1 + x, y1 + x * tilt) for x in range(0, x2 - x1 + 1)]
 
 
-def parse_raw(data: List[str]) -> List[Line]:
-    lines = [[int(num) for num in re.findall(r"\d+", line)] for line in data]
-    return [Line(Point(line[0], line[1]), Point(line[2], line[3])) for line in lines]
+def hits(data: Data) -> int:
+    grid = np.zeros((1000, 1000), dtype=int)  # type: ignore
+    for line in data:
+        for x, y in intersections(line):
+            grid[y][x] += 1  # type: ignore
+
+    return (grid > 1).sum()  # type: ignore
 
 
-def puzzle_1(data: List[Line]) -> int:
-    board = Board(data)
-    board.prune_tilted()
-    return board.hits()
+def puzzle_1(data: Data) -> int:
+    return hits(
+        ((x1, y1), (x2, y2)) for (x1, y1), (x2, y2) in data if x1 == x2 or y1 == y2
+    )
 
 
-def puzzle_2(data: List[Line]) -> int:
-    board = Board(data)
-    return board.hits()
+def puzzle_2(data: Data) -> int:
+    return hits(data)
 
 
 if __name__ == "__main__":
-    data = parse_raw(data)
-    # print(f"Puzzle 1: {puzzle_1(data)}")
+    data = list(parse_raw(data))
+    print(f"Puzzle 1: {puzzle_1(data)}")
     print(f"Puzzle 2: {puzzle_2(data)}")
