@@ -1,5 +1,6 @@
-# Advent of Code Session Token
+# Advent of Code
 .token
+2021/*.txt
 
 # Editor files
 .vscode
