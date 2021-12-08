@@ -7,10 +7,10 @@ with open("2021/day_7.txt") as f:
 def mean(data: np.ndarray, f) -> int:
     median = int(np.median(data))
     lowest: int | None = None
-    for guess in range(median - 1000, median + 1000):
+    for guess in range(median - 200, median + 200):
         cost = sum(np.fromiter((f(guess, val) for val in data), dtype=int))
         if lowest is None:
-            lowest = 1000000000000
+            lowest = 10000000000
         elif cost < lowest:
             lowest = cost
 
