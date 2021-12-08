@@ -7,10 +7,10 @@ with open("2021/day_7.txt") as f:
 def mean(data: np.ndarray, f) -> int:
     median = int(np.median(data))
     lowest: int | None = None
-    for guess in range(median - 10, median + 10):
+    for guess in range(median - 1000, median + 1000):
         cost = sum(np.fromiter((f(guess, val) for val in data), dtype=int))
         if lowest is None:
-            lowest = cost
+            lowest = 1000000000000
         elif cost < lowest:
             lowest = cost
 
@@ -22,9 +22,9 @@ def puzzle_1(data: np.ndarray) -> int:
 
 
 def puzzle_2(data: np.ndarray) -> int:
-    ...
+    return mean(data, lambda guess, val: (abs(guess - val) ** 2 + abs(guess - val)) / 2)
 
 
 if __name__ == "__main__":
     print(f"Puzzle 1: {puzzle_1(data)}")
-    # print(f"Puzzle 2: {puzzle_2(data)}")
+    print(f"Puzzle 2: {puzzle_2(data)}")
